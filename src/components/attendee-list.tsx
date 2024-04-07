@@ -1,6 +1,6 @@
 import "dayjs/locale/pt-br";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import {
     ChevronLeft,
     ChevronRight,
@@ -15,33 +15,92 @@ import { Table } from "./table/table";
 import { TableCell } from "./table/table-cell";
 import { TableHeader } from "./table/table-header";
 import { TableRow } from "./table/table-row";
-import { attendees } from "../data/attendees";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 dayjs.locale("pt-br");
 
+interface Attendee {
+    id: string;
+    name: string;
+    email: string;
+    createdAt: string;
+    checkedInAt: string | null;
+}
+
 export function AttendeeList() {
-    const [search, setSearch] = useState("");
-    const [page, setPage] = useState(1);
-    const totalPages = Math.ceil(attendees.length / 10);
+    const [search, setSearch] = useState(() => {
+        const url = new URL(window.location.toString());
+        if (url.searchParams.has("search")) {
+            return url.searchParams.get("search") ?? "";
+        }
+        return "";
+    });
+
+    const [page, setPage] = useState(() => {
+        const url = new URL(window.location.toString());
+        if (url.searchParams.has("page")) {
+            return Number(url.searchParams.get("page"));
+        }
+        return 1;
+    });
+    const [attendees, setAttendees] = useState<Attendee[]>([]);
+    const [total, setTotal] = useState(0);
+
+    const totalPages = Math.ceil(total / 10);
+
+    function goToNextPage() {
+        setCurrentPage(page + 1);
+    }
+
+    function goToPreviousPage() {
+        setCurrentPage(page - 1);
+    }
+
+    function goToFirstPage() {
+        setCurrentPage(1);
+    }
+
+    function goToLastPage() {
+        setCurrentPage(totalPages);
+    }
+
+    function setCurrentPage(page: number) {
+        const url = new URL(window.location.toString());
+        url.searchParams.set("page", String(page));
+        window.history.pushState({}, "", url);
+        setPage(page);
+    }
+
+    function setCurrentSearch(search: string) {
+        const url = new URL(window.location.toString());
+        url.searchParams.set("search", String(search));
+        window.history.pushState({}, "", url);
+        setSearch(search);
+    }
 
     function onSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
-        setSearch(event.target.value);
+        setCurrentSearch(event.target.value);
+        setCurrentPage(1);
     }
-    function goToNextPage() {
-        setPage(page + 1);
-    }
-    function goToPreviousPage() {
-        setPage(page - 1);
-    }
-    function goToFirstPage() {
-        setPage(1);
-    }
-    function goToLastPage() {
-        setPage(totalPages);
-    }
+    useEffect(() => {
+        const url = new URL(
+            "http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees"
+        );
+        url.searchParams.set("page", String(page - 1));
+
+        if (search.length > 0) {
+            url.searchParams.set("query", search);
+        }
+
+        fetch(url)
+            .then(async (response) => await response.json())
+            .then((data) => {
+                setAttendees(data.attendees);
+                setTotal(data.total);
+            });
+    }, [page, search]);
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
@@ -50,7 +109,7 @@ export function AttendeeList() {
                     <Search className="size-4 text-emerald-300" />
                     <input
                         value={search}
-                        className="flex-1 border-0 bg-transparent p-0 text-sm outline-none"
+                        className="flex-1 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0"
                         placeholder="Buscar participante..."
                         onChange={onSearchInputChange}
                     />
@@ -79,41 +138,45 @@ export function AttendeeList() {
                     </tr>
                 </thead>
                 <tbody>
-                    {attendees
-                        .slice((page - 1) * 10, (page + 1) * 10)
-                        .map((attendee) => (
-                            <TableRow key={attendee.id}>
-                                <TableCell>
-                                    <input
-                                        type="checkbox"
-                                        className="checked:bg-orange-400"
-                                    />
-                                </TableCell>
-                                <TableCell>{attendee.id}</TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col gap-1 font-semibold text-white">
-                                        <span>{attendee.name}</span>
-                                        <span>{attendee.email}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {dayjs().to(attendee.createdAt)}
-                                </TableCell>
-                                <TableCell>
-                                    {dayjs().to(attendee.checkedInAt)}
-                                </TableCell>
-                                <TableCell>
-                                    <IconButton transparent>
-                                        <MoreHorizontal className="size-4" />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                    {attendees.map((attendee) => (
+                        <TableRow key={attendee.id}>
+                            <TableCell>
+                                <input
+                                    type="checkbox"
+                                    className="checked:bg-orange-400"
+                                />
+                            </TableCell>
+                            <TableCell>{attendee.id}</TableCell>
+                            <TableCell>
+                                <div className="flex flex-col gap-1 font-semibold text-white">
+                                    <span>{attendee.name}</span>
+                                    <span>{attendee.email}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                {dayjs().to(attendee.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                                {attendee.checkedInAt === null ? (
+                                    <span className="text-zinc-500">
+                                        Não fez check-in
+                                    </span>
+                                ) : (
+                                    dayjs().to(attendee.checkedInAt)
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                <IconButton transparent>
+                                    <MoreHorizontal className="size-4" />
+                                </IconButton>
+                            </TableCell>
+                        </TableRow>
+                    ))}
                 </tbody>
                 <tfoot>
                     <tr>
                         <TableCell colSpan={3}>
-                            Mostrando 10 de {attendees.length} itens
+                            Mostrando {attendees.length} de {total} itens
                         </TableCell>
                         <TableCell className="text-right" colSpan={3}>
                             <div className="inline-flex items-center gap-8">

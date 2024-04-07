@@ -1,30 +1,37 @@
-# React + TypeScript + Vite
+<div align="center">
+    <img src="./README/Thumbnail.png" >
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
+## :books: Descrição
 
-Currently, two official plugins are available:
+<p>
+    Projeto feito durante a NLW Unite, o pass.in que foi feito na Trilha de React, tem a principal função de listar
+    os usuários que foram cadastrados em um evento, trazendo suas informações e detalhes de cada um deles. O principal foco
+    desse projeto, é trazer uma visão mais clean no processo de mudanças em uma URL, o que é tratado no projeto, que são os
+    estados da URL ou URL States
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
+## :art: Layout
 
-## Expanding the ESLint configuration
+<img src="./README/Projeto.png" >
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+---
+## :gear: Techs
+- Front-end
+    - [ReactJS](https://reactjs.org/)
+    - [Vite](https://vitejs.dev/)
+    - [Tailwind](https://tailwindcss.com/)
 
-- Configure the top-level `parserOptions` property like this:
+---
+## :desktop_computer: Como usar
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+- É necessário rodar no terminal o comando abaixo:
 ```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+    npm run dev
+```
+- Para acessar a página web, abra uma aba no navegador e digite http://localhost:5173
+---
+## :spiral_notepad: License
+Arquivos sob a licença [MIT](https://github.com/lucasgomesgp) criado por Lucas Gomes.
